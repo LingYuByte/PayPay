@@ -37,7 +37,18 @@ export function toParams(opt: PayOptionsWithSign | { [key: string]: any }) {
     params = params.slice(0, -1);
     return params;
 }
-
+export function toAppParam(opt: string) {
+    let x = JSON.parse(opt);
+    let s = ``;
+    for (let now of Object.keys(opt)) {
+        s += `${now}:-:${opt[now]};`;
+    }
+}
+export function AppParamToJSON(opt: string) {
+    let p = opt.match(/(\S)*:-:(\S*)/g);
+    console.log(p);
+    // return p[2]
+}
 export class Pay {
     /**
 * 根据传入的对象生成一个MD5签名字符串。
@@ -54,8 +65,7 @@ export class Pay {
         });
         let sign = ``;
         for (let now of keys) {
-            if(now == `sign` || now == `sign_type`)
-            {
+            if (now == `sign` || now == `sign_type`) {
                 continue;
             }
             sign += `${now}=${opt[now]}&`;
@@ -74,6 +84,7 @@ export class Pay {
             else {
                 opt.param = JSON.stringify({ app })
             }
+            toAppParam(opt.param);
             logger.info(`创建订单：${app}-${opt.out_trade_no}`);
             let optWithSign: PayOptionsWithSign = {
                 ...opt,
@@ -93,7 +104,7 @@ export class Pay {
                             outTradeNo: opt.out_trade_no,
                             productName: opt.name,
                             price: opt.money,
-                            realPayed: 0,
+                            realPayed: respon.data.price,
                             clientIp: opt.clientip,
                             status: `pending`
                         });
@@ -111,30 +122,31 @@ export class Pay {
                     }
                 }
             }
-            catch (e) { console.error(e); reject(`发生系统错误`); }
+            catch (e) {
+                console.error(e); reject(`发生系统错误`);
 
-            return axios.post(`https://v2v2.v2v2.cn/mapi.php?` + toParams(optWithSign));
-
+            }
         })
     }
-    static async PayFinishHandel(trade_no: string, trade_status: string, param: string) {
-        let params = JSON.parse(param);
+    static async PayFinishHandel(trade_no: string, out_trade_no: string, trade_status: string, param: string) {
+        // let params = JSON.parse(param);
         logger.info(`支付回调：${trade_no}-${trade_status}`);
         database.transaction(async () => {
-            Cart.findOne({ where: { outTradeNo: trade_no, app: params[`app`] } }).then(async (cart) => {
-                if (cart) {
-                    if (trade_status == `TRADE_SUCCESS`) {
-                        cart.status = `success`;
-                        cart.save();
-                    }
-                    else {
-                        cart.status = `failed`;
-                    }
+            let cart = await Cart.findOne({ where: { outTradeNo:out_trade_no } });
+            if (cart) {
+                cart.options = JSON.stringify({trade_no});
+                if (trade_status == `TRADE_SUCCESS`) {
+                    cart.status = `success`;
+                    await cart.save();
                 }
                 else {
-                    throw Error(`订单不存在`);
+                    cart.status = `failed`;
+                    await cart.save();
                 }
-            })
+            }
+            else {
+                throw Error(`订单不存在`);
+            }
         }).then(() => {
             logger.info(`${trade_no} 支付回调成功`);
         }).catch((err) => {
