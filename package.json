@@ -1,0 +1,38 @@
+{
+    "name": "express-template",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "start": "ts-node -r  tsconfig-paths/register ./app.ts --files"
+    },
+    "dependencies": {
+        "@kousum/semi-ui-vue": "^0.23.0",
+        "axios": "^1.7.7",
+        "body-parser": "^1.20.3",
+        "bunyan": "^1.8.15",
+        "cls-hooked": "^4.2.2",
+        "crypto-js": "^4.2.0",
+        "dotenv": "^16.4.5",
+        "express": "^4.21.1",
+        "express-validator": "^7.2.0",
+        "fs-extra": "^11.2.0",
+        "mysql2": "^3.11.4",
+        "qrcode": "^1.5.4",
+        "sequelize": "^6.37.5",
+        "tsconfig-paths": "^4.2.0",
+        "winston": "^3.17.0",
+        "winston-daily-rotate-file": "^5.0.0"
+    },
+    "devDependencies": {
+        "@types/body-parser": "^1.19.5",
+        "@types/bunyan": "^1.8.11",
+        "@types/cls-hooked": "^4.3.9",
+        "@types/cookie-parser": "^1.4.7",
+        "@types/crypto-js": "^4.2.2",
+        "@types/express": "^5.0.0",
+        "@types/fs-extra": "^11.0.4",
+        "@types/node": "^22.8.1",
+        "@types/qrcode": "^1.5.5",
+        "cookie-parser": "^1.4.7"
+    }
+}
