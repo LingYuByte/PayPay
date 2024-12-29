@@ -36,6 +36,10 @@ function genValidater(names: string[]) {
             res.status(200).send({});
             return;
         }
+        if(req.headers.authorization !== process.env.PASSWORD)
+        {
+            res.status(403).send(`Bad Request`);
+        }
         next();
     });
     app.post(`/createPay`, ...genValidater([`type`, `name`, `out_trade_no`, `price`, `app`]), async (req, res) => {
@@ -62,17 +66,16 @@ function genValidater(names: string[]) {
         }
     });
     app.get(`/notify`,async (req, res) => {
-        // console.log(req.query);
-        // for(let now of Object.keys(req.query))
-        // {
-        //     req.query[now] = decodeURI(req.query[now] as string);
-        // }
-        // console.log(req.query);
-        // const mdcode = Pay.getMdCode(req.query);
-        // if(mdcode !== req.query.sign)
-        // {
-        //     logger.warn(`!!! 假回调 !!!`);
-        // }
+        for(let now of Object.keys(req.query))
+        {
+            req.query[now] = decodeURI(req.query[now] as string);
+        }
+        console.log(req.query);
+        const mdcode = Pay.getMdCode(req.query);
+        if(mdcode !== req.query.sign)
+        {
+            logger.warn(`!!! 假回调 !!!`);
+        }
         try
         {
             await Pay.PayFinishHandel(req.query.trade_no as string,req.query.out_trade_no as string, req.query.trade_status as string, req.query.param as string);
